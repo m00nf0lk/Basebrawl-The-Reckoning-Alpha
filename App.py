@@ -21,14 +21,35 @@ def run_game():
     fresh_aether_players = get_new_roster(original_aether_players)
     fresh_scorpions_pitchers = fresh_scorpions_players.copy()
     fresh_aether_pitchers = fresh_aether_players.copy()
-    # Run the game and store the log in session state.
-    st.session_state.game_log = play_full_game(
-        fresh_scorpions_players,
-        fresh_aether_players,
-        fresh_scorpions_pitchers,
-        fresh_aether_pitchers,
-        "Scorpions", "The Aether"
-    )
+
+    # Initialize flip flag if not present.
+    if "flip_order" not in st.session_state:
+        st.session_state.flip_order = False
+
+    # If flip_order is True, swap team order.
+    if st.session_state.flip_order:
+        # Now The Aether bats first.
+        st.session_state.game_log = play_full_game(
+            fresh_aether_players,
+            fresh_scorpions_players,
+            fresh_aether_pitchers,
+            fresh_scorpions_pitchers,
+            "The Aether",   # Team A (batting first)
+            "Scorpions"     # Team B (batting second)
+        )
+    else:
+        # Scorpions bat first.
+        st.session_state.game_log = play_full_game(
+            fresh_scorpions_players,
+            fresh_aether_players,
+            fresh_scorpions_pitchers,
+            fresh_aether_pitchers,
+            "Scorpions",    # Team A (batting first)
+            "The Aether"    # Team B (batting second)
+        )
+
+    # Toggle the flag for the next game.
+    st.session_state.flip_order = not st.session_state.flip_order
     st.session_state.game_run = True
 
 # Determine the button label based on session state.
@@ -42,3 +63,5 @@ if st.session_state.game_log:
     st.write("### Game Log")
     for line in st.session_state.game_log:
         st.write(line)
+
+# streamlit run App.py
