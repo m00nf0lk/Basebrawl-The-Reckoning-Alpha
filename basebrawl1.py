@@ -617,9 +617,6 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
 
         if occupied_bases.get(extra_target) is not None or frozen_bases.get(extra_target, False):
             new_target = target_base
-            runner_movements.append(
-                f"{format_player_status(runner)} cannot take the extra base to {base_number_to_text(extra_target)} because it's occupied or frozen, so advances only to {base_number_to_text(new_target)}."
-            )
         else:
             new_target = extra_target
             if new_target != 3:
