@@ -532,8 +532,6 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
 
     # Immediately check if the target base is frozen.
     if frozen_bases.get(target_base, False):
-        msg = f"{format_player_status(runner)} cannot advance because {base_number_to_text(target_base)} is frozen."
-        runner_movements.append(msg)
         return ("frozen", runner_movements, runs_scored, play_by_play_message, outs, new_base)
 
     # Retrieve defender info for the target base.
