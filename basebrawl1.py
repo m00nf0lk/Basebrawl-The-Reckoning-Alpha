@@ -47,27 +47,27 @@ def update_player_stats(player):
 
 # ---- Original rosters (master copies) ---- #
 original_scorpions_players = [
-    Player("Dread Malakar", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Thorne Graveborn", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Skar Deathwhisper", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Vekros Hollowfang", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Nyx Voidclaw", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Xal'tor Bloodreaver", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Zyphos Venomspine", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Azrik Nightbane", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Vaelthar Doomfang", 0, 0, 0, 0, 0, 0, 0, 0),
+    Player("Dread Malakar", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Thorne Graveborn", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Skar Deathwhisper", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Vekros Hollowfang", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Nyx Voidclaw", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Xal'tor Bloodreaver", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Zyphos Venomspine", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Azrik Nightbane", 3, 0, 0, 0, 0, 0, 0, 0),
+    Player("Vaelthar Doomfang", 3, 0, 0, 0, 0, 0, 0, 0),
 ]
 
 original_aether_players = [
-    Player("Oryn Silverhand", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Alric Sunshard", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Celian Starborn", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Vaelor Lightcrest", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Zephiron Windrider", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Eldrin Dawnseeker", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Solric Moonveil", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Varian Everwatch", 0, 0, 0, 0, 0, 0, 0, 0),
-    Player("Kaelis Runeveil", 0, 0, 0, 0, 0, 0, 0, 0),
+    Player("Oryn Silverhand", 0, 2, 1, 0, 0, 0, 0, 0),
+    Player("Alric Sunshard", 0, 1, 2, 0, 0, 0, 0, 0),
+    Player("Celian Starborn", 0, 3, 0, 0, 0, 0, 0, 0),
+    Player("Vaelor Lightcrest", 0, 0, 3, 0, 0, 0, 0, 0),
+    Player("Zephiron Windrider", 0, 3, 0, 0, 0, 0, 0, 0),
+    Player("Eldrin Dawnseeker", 0, 0, 3, 0, 0, 0, 0, 0),
+    Player("Solric Moonveil", 0, 1, 2, 0, 0, 0, 0, 0),
+    Player("Varian Everwatch", 0, 2, 1, 0, 0, 0, 0, 0),
+    Player("Kaelis Runeveil", 1, 1, 1, 0, 0, 0, 0, 0),
 ]
 
 def get_new_roster(master_roster):
@@ -541,11 +541,16 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
 
     # If no active defender is present, the runner advances safely.
     if not is_active(active_defender):
-        msg = f"{format_player_status(runner)} freely advances to {base_number_to_text(target_base)}"
+        # Build a message that varies based on whether the runner is going home.
+        if target_base == 3:
+            msg = f"{format_player_status(runner)} freely advances to home plate and scores"
+        else:
+            msg = f"{format_player_status(runner)} freely advances to {base_number_to_text(target_base)}"
         if primary_status_message:
             msg += f" because {primary_status_message}"
         msg += "!"
         runner_movements.append(msg)
+
         if target_base == 3:
             if outs < 3:
                 runs_scored += 1
@@ -621,14 +626,16 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
             new_target = extra_target
             if new_target != 3:
                 runner_movements.append(
-                    f"{format_player_status(runner)} takes an extra base from {base_number_to_text(starting_base)} and ends up on {base_number_to_text(new_target)}!"
+                    f"{format_player_status(runner)} takes an extra base from {base_number_to_text(starting_base)} "
+                    f"and ends up on {base_number_to_text(new_target)}!"
                 )
 
         # If the new target is home (3), update scoring.
         if new_target == 3:
             if outs < 3:
                 runs_scored += 1
-                runner_movements.append(f"{format_player_status(runner)} takes an extra base from {base_number_to_text(starting_base)} and scores!")
+                runner_movements.append(f"{format_player_status(runner)} takes an extra base from "
+                                        f"{base_number_to_text(starting_base)} and scores!")
                 if is_top:
                     score[team_a_name] += 1
                     reduce_msg = riled_up.reduce_on_score(team_a_name)
@@ -650,8 +657,6 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
         else:
             new_base = new_target if new_target in (0, 1, 2) else None
             return ("safe", runner_movements, runs_scored, play_by_play_message, outs, new_base)
-
-
 
     # --- Outcome: Safe Advance ---
     elif roll_result == "safe":
@@ -948,10 +953,10 @@ def process_hit_with_correct_base_running(
 
 #==== pickoff attempt ====
 def attempt_pickoff(runner, pitcher):
-    attempt_probability = max(pitcher.chutzpah / 25, 0.02)
+    attempt_probability = max(pitcher.agility / 25, 0.02)
     if random.random() >= attempt_probability:
         return "no_attempt", 0
-    pitcher_score = max(pitcher.pitching, pitcher.chutzpah)
+    pitcher_score = max(pitcher.pitching, pitcher.agility)
     roll = random.randint(1, 100) + (pitcher_score - runner.baserunning)
     if roll >= 80:
         outcome = "picked_off"
@@ -963,7 +968,8 @@ def attempt_pickoff(runner, pitcher):
         outcome = "balk"
     return outcome, roll
 
-def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_top, team_a_name, team_b_name, defensive_positions, balls, strikes, outs):
+def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_top, team_a_name,
+                             team_b_name, defensive_positions, balls, strikes, outs):
     """
     Iterates over base runners and attempts a pickoff.
     Adjusts base_runners and outs or score depending on the outcome.
@@ -978,14 +984,16 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                 base_runners[base_index] = None
                 outs += 1
                 updated_bso = format_bso(balls, strikes, outs)
-                play_by_play_log.append(f"⚾ {pitcher.name} spins around and throws to {base_text}... OUT! {format_player_status(runner)} is picked off! {updated_bso}")
+                play_by_play_log.append(f"⚾ {pitcher.name} spins around and throws to {base_text}... OUT! "
+                                        f"{format_player_status(runner)} is picked off! {updated_bso}")
                 if outs >= 3:
                     end_at_bat = True
                     break
 
             elif result == "checked":
                 updated_bso = format_bso(balls, strikes, outs)
-                play_by_play_log.append(f"⚾ {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} runs back just in time. Safe!")
+                play_by_play_log.append(f"⚾ {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} "
+                                        f"runs back just in time. Safe!")
             elif result == "balk":
                 new_bases = [None, None, None]
                 scored = False
@@ -1005,7 +1013,8 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                 base_runners = new_bases
                 if scored:
                     play_by_play_log.append(
-                        f"{pitcher.name} slips up on the mound... and it's a balk! All baserunners advance. {scoring_runner_name} scores! {display_bases_as_squares(base_runners)}"
+                        f"{pitcher.name} slips up on the mound... and it's a balk! All baserunners advance. {scoring_runner_name} "
+                        f"scores! {display_bases_as_squares(base_runners)}"
                     )
                     score_line = f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}"
                     play_by_play_log.append(score_line)
@@ -1149,7 +1158,7 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 continue
 
         # Branch for the near-miss home run triggered by raw_roll == 100.
-        if raw_roll == 100 and random.random() <= 0.05:
+        if raw_roll == 100 and random.random() <= 0.1:
             foul_mood.update(False)
             bso_display = format_bso(balls, strikes, current_outs)
             event = "near_miss_hr"
@@ -1172,10 +1181,44 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 score_update_msg
             )
             pitches.append(play_description)
+            # Immediately return the near_miss_hr event so that the at-bat ends.
             return event, new_bases, pitches, current_outs, beaned, balls, strikes, scoring_names
 
-        # Branch for home run when roll >= 102.
-        if roll >= 102:
+        # Next, if roll is exactly 100 and the batter has at least 1 power, try the power HR second chance.
+        if (roll == 100 and batter.power >= 1) or (roll == 99 and batter.power >= 6):
+            if batter.power < 6:
+                second_roll = random.randint(1, 5)
+            else:
+                second_roll = random.randint(6, 10)
+            if second_roll <= batter.power:
+                foul_mood.update(False)
+                bso_display = format_bso(balls, strikes, current_outs)
+                scoring_names = [r.name for r in base_runners if r is not None] + [batter.name]
+                scoring = len(scoring_names)
+                if is_top:
+                    score[team_a_name] += scoring
+                else:
+                    score[team_b_name] += scoring
+                new_bases = [None, None, None]
+                score_update_msg = f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}"
+                play_msg = f"{batter.name} clears the fence!"
+                play_description, event = describe_full_play(
+                    batter,
+                    "home run",
+                    [play_msg],
+                    "scores",
+                    new_bases,
+                    scoring_names,
+                    bso_display,
+                    score_update_msg
+                )
+                pitches.append(play_description)
+                event = "potential_home_run"
+                return event, new_bases, pitches, current_outs, beaned, balls, strikes, scoring_names
+            # If the power HR chance fails, fall through to the normal hit branch.
+
+        # Finally, process a regular home run for rolls of 102 or higher.
+        if roll >= 101:
             foul_mood.update(False)
             bso_display = format_bso(balls, strikes, current_outs)
             scoring_names = [r.name for r in base_runners if r is not None] + [batter.name]
@@ -1186,10 +1229,11 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 score[team_b_name] += scoring
             new_bases = [None, None, None]
             score_update_msg = f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}"
+            play_msg = f"{batter.name} clears the fence!"
             play_description, event = describe_full_play(
                 batter,
                 "home run",
-                [f"{batter.name} clears the fence!"],
+                [play_msg],
                 "scores",  # batter movement message
                 new_bases,
                 scoring_names,
@@ -1197,11 +1241,32 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 score_update_msg
             )
             pitches.append(play_description)
-            # Change the event label so it triggers process_hit_with_correct_base_running
             event = "potential_home_run"
             return event, new_bases, pitches, current_outs, beaned, balls, strikes, scoring_names
 
-        elif roll >= 80:
+        # Result: Ball is Hit
+        # Calculate the effective threshold based on batter's agility.
+        # For agility 0, threshold is 80.
+        # For agility 1-2, threshold is 79; 3-4 → 78; 5-6 → 77; 7-8 → 76; 9-10 → 75.
+        if batter.agility == 0:
+            effective_threshold = 80
+        else:
+            effective_threshold = 80 - ((batter.agility + 1) // 2)
+        # Initialize a flag for whether the hit attempt succeeds.
+        hit_attempt_success = False
+        # Attempt the hit if the roll is at least the effective threshold.
+        if roll >= effective_threshold:
+            # If the roll is exactly equal to the threshold and the batter is at the lower end of the tier
+            # (i.e. an odd agility value), apply a 50% chance for success.
+            if roll == effective_threshold and batter.agility > 0 and (batter.agility % 2 == 1):
+                if random.random() < 0.5:
+                    hit_attempt_success = False  # Fail the hit attempt.
+                else:
+                    hit_attempt_success = True
+            else:
+                hit_attempt_success = True
+        # If the hit attempt succeeds, update the foul mood and determine the hit type.
+        if hit_attempt_success:
             foul_mood.update(False)
             hit_roll = random.randint(1, 100)
             if hit_roll >= 99:
@@ -1241,80 +1306,124 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                     bonus_message = foul_mood.get_bonus_message()
                     pitches.append(f"The players are getting tired of this... {bonus_message}")
 
-        elif roll >= 20:
+        # --- Adjusted Out Processing Based on batter.chutzpah
+        # Determine thresholds for strikes and fly outs.
+        if batter.chutzpah == 0:
+            strike_threshold = 20
+            flyout_threshold = 10
+        else:
+            strike_threshold = 20 - ((batter.chutzpah + 1) // 2)
+            flyout_threshold = 10 - ((batter.chutzpah + 1) // 2)
+
+        # Strike outcome check.
+        strike_attempt = False
+        if roll >= strike_threshold:
+            # If the roll exactly equals the threshold and batter.chutzpah is odd, apply a 50/50 chance.
+            if roll == strike_threshold and batter.chutzpah > 0 and (batter.chutzpah % 2 == 1):
+                chance = random.random()
+                if chance >= 0.5:
+                    strike_attempt = True
+            else:
+                strike_attempt = True
+
+        if strike_attempt:
             foul_mood.update(False)
             if strikes == 2:
                 current_outs += 1
                 bso_display = format_bso(balls, strikes, current_outs)
                 if roll == 44:
-                    pitches.append(f"{format_player_status(batter)} takes a swing... The ump calls Strike 3! But the offense may dispute the call... with violence. {bso_display}")
+                    pitches.append(
+                        f"{format_player_status(batter)} takes a swing... The ump calls Strike 3! "
+                        f"But the offense may dispute the call... with violence. {bso_display}"
+                    )
                 else:
                     strike_type = random.choice(["swinging", "looking"])
-                    pitches.append(f"{format_player_status(batter)} - Strike 3! {batter.name} strikes out, {strike_type}. {bso_display}")
+                    pitches.append(
+                        f"{format_player_status(batter)} - Strike 3! {batter.name} strikes out, {strike_type}. {bso_display}"
+                    )
                 event = "close_call_out" if roll == 44 else "strike_out"
                 return event, base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
             else:
                 strikes += 1
                 bso_display = format_bso(balls, strikes, current_outs)
                 pitches.append(f"{format_player_status(batter)} - Strike {strikes}! {bso_display}")
-
-        elif roll >= 10:
-            foul_mood.update(False)
-            current_outs += 1
-            bso_display = format_bso(balls, strikes, current_outs)
-            out_description = random.choice([
-                "sends the ball a bit too high... Flyout!",
-                "pops it up and the ball is caught infield. Popout!",
-                "lines it sharply for a Line Out!"
-            ])
-            pitches.append(f"{format_player_status(batter)} {out_description} {bso_display}")
-            return "fly out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
-
         else:
+            # Fly out outcome check.
+            flyout_attempt = False
+            if roll >= flyout_threshold:
+                if roll == flyout_threshold and batter.chutzpah > 0 and (batter.chutzpah % 2 == 1):
+                    chance = random.random()
+                    if chance >= 0.5:
+                        flyout_attempt = True
+                else:
+                    flyout_attempt = True
+
+            if flyout_attempt:
+                foul_mood.update(False)
+                current_outs += 1
+                bso_display = format_bso(balls, strikes, current_outs)
+                out_description = random.choice([
+                    "sends the ball a bit too high... Flyout!",
+                    "pops it up and the ball is caught infield. Popout!",
+                    "lines it sharply for a Line Out!"
+                ])
+                pitches.append(f"{format_player_status(batter)} {out_description} {bso_display}")
+                return "fly out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
+
+            # Ground out outcome.
             foul_mood.update(False)
             current_outs += 1
             bso_display = format_bso(balls, strikes, current_outs)
-            ground_out_msg = f"{format_player_status(batter)} - Ground Out! {bso_display}"
+            combined_msg = f"{format_player_status(batter)} - Ground Out! {bso_display}"
             base_tag_chance = 0.20
             extra_bonus = 0
-            # Get the shortstop if available; otherwise, assign a default value.
             shortstop = defensive_positions.get("shortstop")
             if shortstop is not None and is_active(shortstop):
                 extra_bonus = shortstop.fielding * 0.02
                 shortstop_name = shortstop.name
             else:
-                shortstop_name = "the shortstop"  # or any appropriate default string
-
+                shortstop_name = "the shortstop"
             extra_tag_chance = base_tag_chance + extra_bonus
+            shortstop_called = False
             for base_idx, runner in enumerate(base_runners):
                 if runner is not None:
                     if random.random() < extra_tag_chance:
-                        ground_out_msg += (
-                            f" {format_player_status(runner)} is caught in a rundown and tagged out by {shortstop_name}!"
-                        )
+                        base_text = base_number_to_text(base_idx)
+                        if not shortstop_called:
+                            current_outs += 1
+                            bso_display = format_bso(balls, strikes, current_outs)
+                            tag_msg = f" {format_player_status(runner)} is caught in a rundown and tagged out by {shortstop_name} at {base_text}! {bso_display}"
+                            shortstop_called = True
+                        else:
+                            current_outs += 1
+                            bso_display = format_bso(balls, strikes, current_outs)
+                            tag_msg = f" {format_player_status(runner)} is tagged out at {base_text}! {bso_display}"
+                        combined_msg += tag_msg
                         base_runners[base_idx] = None
-                        current_outs += 1
-                        bso_display = format_bso(balls, strikes, current_outs)
-                        ground_out_msg += f" {bso_display}"
-            pitches.append(ground_out_msg)
+            pitches.append(combined_msg)
             return "ground out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
 
-        if balls == 4:
-            bso_display = format_bso(balls, strikes, current_outs)
-            return "walk", base_runners, pitches, current_outs, beaned, balls, strikes, []
+    # After the while loop in at_bat_with_pitch_sequence:
+    if balls >= 4:
+        pitches.append(f"{format_player_status(batter)} takes four balls and walks!")
+        return ("walk", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
+    elif strikes >= 3:
+        current_outs += 1
+        bso_display = format_bso(balls, strikes, current_outs)
+        pitches.append(f"{format_player_status(batter)} - Strike 3! {batter.name} strikes out. {bso_display}")
+        return ("strike_out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
 
-        #### end the loop at the end of all the calculations when current_outs >=3
-        if current_outs >= 3:
-            break
-
-    return outcome, base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
+    # Fallback branch:
+    print("Warning: at_bat_with_pitch_sequence reached the end without returning a result!")
+    print(f"batter: {batter.name}, balls: {balls}, strikes: {strikes}, outs: {current_outs}")
+    return ("error", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
 
 # === Brawl System === #
 # Base chances (in percentages) for various brawl-triggering events.
 BRAWL_BASE_CHANCES = {
-    **dict.fromkeys(["beaned", "collision"], 25),
-    **dict.fromkeys(["near_miss_hr", "grand_slam"], 10),
-    **dict.fromkeys(["close_tag_out", "close_call_out"], 10),
+    **dict.fromkeys(["beaned", "collision"], 50),
+    **dict.fromkeys(["near_miss_hr", "grand_slam"], 25),
+    **dict.fromkeys(["close_tag_out", "close_call_out"], 25),
     **dict.fromkeys(["single", "double", "triple", "strike_out", "fly out", "ground out"], -50)
 }
 
@@ -1524,7 +1633,7 @@ def update_injury_status(team, team_name, recovery_messages):
                 if hasattr(player, "knockout_halves_remaining"):
                     delattr(player, "knockout_halves_remaining")
                 recovery_messages.append(
-                    f"💖 {player.name} makes an extraordinary FULL recovery and is fully healed!"
+                    f"💖 {player.name} makes an extraordinary recovery and is fully healed!"
                 )
                 player.recovery_bonus = 0.0
             else:
@@ -1650,20 +1759,26 @@ def describe_full_play(batter, hit_type, runner_movements, batter_movement, base
     if hit_type == "near_miss_hr":
         formatted_scorers = format_scorers(runners_scoring)
         verb = "scores" if len(runners_scoring) == 1 else "score"
-        description = f"{format_player_status(batter)} BARELY CLEARS THE FENCE! {formatted_scorers} {verb}!"
+        description = f"{format_player_status(batter)} - It's a hit... THE BALL BARELY CLEARS THE FENCE! HOME RUN! {formatted_scorers} {verb}! The defense is brooding..."
         if score_update:
             description += "\n" + score_update
         event = hit_type
         return description, event
-    elif hit_type == "home run":
+    if hit_type in ["home run", "near_miss_hr"]:
         formatted_scorers = format_scorers(runners_scoring)
         verb = "scores" if len(runners_scoring) == 1 else "score"
         if len(runners_scoring) == 4:
             event = "grand_slam"
-            description = f"💥 {format_player_status(batter)} SENDS IT INTO ORBIT! GRAND SLAM! 💥 {formatted_scorers} {verb}!"
+            if hit_type == "near_miss_hr":
+                description = f"💥 {format_player_status(batter)} - It's a hit... THE BALL BARELY CLEARS THE FENCE! GRAND SLAM! 💥 {formatted_scorers} {verb}! The defense is brooding..."
+            else:
+                description = f"💥 {format_player_status(batter)} SENDS IT INTO ORBIT! GRAND SLAM! 💥 {formatted_scorers} {verb}!"
         else:
             event = hit_type
-            description = f"{format_player_status(batter)} SMASHES A HOME RUN OUT OF THE PARK! {formatted_scorers} {verb}!"
+            if hit_type == "near_miss_hr":
+                description = f"{format_player_status(batter)} - It's a hit... THE BALL BARELY CLEARS THE FENCE! HOME RUN! {formatted_scorers} {verb}! The defense is brooding..."
+            else:
+                description = f"{format_player_status(batter)} SMASHES A HOME RUN OUT OF THE PARK! {formatted_scorers} {verb}!"
         if score_update:
             description += "\n" + score_update
         return description, event
@@ -1824,7 +1939,8 @@ def half_inning_with_fixed_base_running(
                         outs += 1
                         updated_bso = format_bso(balls, strikes, outs)
                         play_by_play_log.append(
-                            f"{format_player_status(runner)} attempts to steal {next_base_text} and is caught! {updated_bso} {display_bases_as_squares(base_runners)}"
+                            f"{format_player_status(runner)} attempts to steal {next_base_text} and is caught! "
+                            f"{updated_bso} {display_bases_as_squares(base_runners)}"
                         )
                         if outs >= 3:
                             break
@@ -1864,7 +1980,7 @@ def half_inning_with_fixed_base_running(
             # Only break if a decisive outcome is reached.
             if at_bat_result in ["potential_single", "potential_double", "potential_triple", "walk",
                                  "beaned_walk", "potential_bunt_hit", "bunt_out", "bunt_dp", "strike_out",
-                                 "fly out", "ground out", "home run", "grand_slam"]:
+                                 "fly out", "ground out", "home run", "grand_slam", "near_miss_hr"]:
                 break
             # Otherwise, the at–bat continues (i.e. more pitches for the same batter).
 
@@ -1952,7 +2068,9 @@ def half_inning_with_fixed_base_running(
                 else:
                     base_runners[0] = batter
                 if at_bat_result == "beaned_walk":
-                    play_by_play_log.append(f"{format_player_status(batter)} is beaned by {pitcher.name}! Automatic walk! {batter.name} advances to first. The offense is brooding... {display_bases_as_squares(base_runners)}")
+                    play_by_play_log.append(f"{format_player_status(batter)} is beaned by {pitcher.name}! "
+                                            f"Automatic walk! {batter.name} advances to first. "
+                                            f"The offense is brooding... {display_bases_as_squares(base_runners)}")
                     maybe_trigger_brawl("beaned", team_a, team_b, team_a_name, team_b_name, play_by_play_log, foul_mood)
                 else:
                     walk_msg = f"{format_player_status(batter)} takes a walk and advances to first."
@@ -1995,7 +2113,8 @@ def half_inning_with_fixed_base_running(
 
     summary_lines = []
     summary_lines.append("")
-    summary_lines.append(f"END OF THE {'TOP' if is_top else 'BOTTOM'} OF INNING {inning}. 📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}")
+    summary_lines.append(f"END OF THE {'TOP' if is_top else 'BOTTOM'} OF INNING {inning}. "
+                         f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}")
     summary_lines.append("")
     play_by_play_log.extend(summary_lines)
 
@@ -2012,9 +2131,9 @@ def play_full_game(team_a_master, team_b_master, pitchers_a, pitchers_b, team_a_
     # Use a mutable score dictionary.
     score = {team_a_name: 0, team_b_name: 0}
     full_play_by_play = []
-    full_play_by_play.append("💥 **Welcome to today's game!** 💥")
+    full_play_by_play.append("🚩️ **Welcome to today's game!** 🚩️")
     full_play_by_play.append(f"🏆 **Matchup: {team_a_name} vs. {team_b_name}** 🏆")
-    full_play_by_play.append("⚾ **PLAY BALL!** ⚾\n")
+    full_play_by_play.append("💥 **PLAY BALL!** 💥\n")
 
     # Create a single persistent FoulMood instance for the entire game.
     foul_mood = FoulMood()
