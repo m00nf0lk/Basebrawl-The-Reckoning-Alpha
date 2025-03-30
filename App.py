@@ -6,6 +6,9 @@ from basebrawl1 import (
     play_full_game
 )
 
+# Add an anchor at the top for scrolling.
+st.markdown('<a name="top"></a>', unsafe_allow_html=True)
+
 # Initialize session state if not already present.
 if "game_run" not in st.session_state:
     st.session_state.game_run = False
@@ -64,4 +67,22 @@ if st.session_state.game_log:
     for line in st.session_state.game_log:
         st.write(line)
 
-# streamlit run App.py
+
+st.markdown(
+    """
+    <style>
+    .scroll-button {
+        display: inline-block;
+        padding: 0.5em 1em;
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 1em;
+    }
+    </style>
+    <a href="#top" class="scroll-button">RE-PLAY BALL!</a>
+    """,
+    unsafe_allow_html=True
+)
