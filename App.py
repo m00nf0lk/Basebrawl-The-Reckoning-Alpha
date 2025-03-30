@@ -63,9 +63,9 @@ st.button(button_label, on_click=run_game)
 
 # Display the game log if it exists.
 if st.session_state.game_log:
-    st.write("### Game Log")
-    for line in st.session_state.game_log:
-        st.write(line)
+    st.markdown("### Game Log")
+    game_log_str = "\n".join(st.session_state.game_log)
+    st.markdown(game_log_str.replace("\n", "<br>"), unsafe_allow_html=True)
 
 
 st.markdown(
