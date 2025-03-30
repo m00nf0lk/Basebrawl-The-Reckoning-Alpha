@@ -12,7 +12,7 @@ if "game_run" not in st.session_state:
 if "game_log" not in st.session_state:
     st.session_state.game_log = []
 
-st.title("Basebrawl: The Reckoning 2")
+st.title("Basebrawl: The Reckoning")
 st.markdown("*welcome, mortal...*")
 
 def run_game():
