@@ -81,7 +81,7 @@ st.markdown(
         margin-top: 1em;
     }
 
-    .scroll-button a {
+    a.scroll-button {
     color: white!important
     }
     
