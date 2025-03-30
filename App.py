@@ -7,7 +7,7 @@ from basebrawl1 import (
 )
 
 # Add an anchor at the top for scrolling.
-st.markdown('<a name="top"></a>', unsafe_allow_html=True)
+st.markdown('<div id="top" style="padding-top: 80px; margin-top: -80px;"></div>', unsafe_allow_html=True)
 
 # Initialize session state if not already present.
 if "game_run" not in st.session_state:
