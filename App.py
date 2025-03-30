@@ -75,14 +75,18 @@ st.markdown(
         display: inline-block;
         padding: 0.5em 1em;
         background-color: #4CAF50;
-        color: white;
         text-align: center;
         text-decoration: none;
         border-radius: 4px;
         margin-top: 1em;
     }
+
+    .scroll-button a {
+    color: white!important
+    }
+    
     </style>
-    <a href="#top" class="scroll-button">RE-PLAY BALL!</a>
+    <a href="#top" class="scroll-button">GO BACK FROM WHENCE YE CAME</a>
     """,
     unsafe_allow_html=True
 )
