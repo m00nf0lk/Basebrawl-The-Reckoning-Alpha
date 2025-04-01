@@ -360,9 +360,9 @@ def batter_status_message(batter, team_name):
         return f"{batter.name} was called to the plate... but they're knocked out."
     elif hasattr(batter, "injury_status") and batter.injury_status in ["Winded", "Shook Up", "Injured"]:
         # Use the helper to show the status but still keep the context of stepping up.
-        return f"{format_player_status(batter)} steps up to the plate, batting for {team_name}!"
+        return f"{format_player_status(batter)} steps up to the plate, batting for {team_name}."
     else:
-        return f"{format_player_status(batter)} steps up to the plate, batting for {team_name}!"
+        return f"{format_player_status(batter)} steps up to the plate, batting for {team_name}."
 
 #==== Advancement and Fielding ====#
 
@@ -949,7 +949,7 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                 base_runners[base_index] = None
                 outs += 1
                 updated_bso = format_bso(balls, strikes, outs)
-                play_by_play_log.append(f"⚾ {pitcher.name} spins around and throws to {base_text}... OUT! "
+                play_by_play_log.append(f"⚾ Pitcher {pitcher.name} spins around and throws to {base_text}... OUT! "
                                         f"{format_player_status(runner)} is picked off! {updated_bso}")
                 if outs >= 3:
                     end_at_bat = True
@@ -957,7 +957,7 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
 
             elif result == "checked":
                 updated_bso = format_bso(balls, strikes, outs)
-                play_by_play_log.append(f"⚾ {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} "
+                play_by_play_log.append(f"⚾ Pitcher {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} "
                                         f"runs back just in time. Safe!")
             elif result == "balk":
                 new_bases = [None, None, None]
@@ -978,7 +978,7 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                 if scored:
                     # (1) Action message:
                     play_by_play_log.append(
-                        f"{pitcher.name} slips up on the mound... and it's a balk! All baserunners advance. {scoring_runner_name} scores! {display_bases_as_squares(base_runners)}"
+                        f"Pitcher {pitcher.name} slips up on the mound... and it's a balk! All baserunners advance. {scoring_runner_name} scores! {display_bases_as_squares(base_runners)}"
                     )
                     # (2) Riled-down message:
                     if is_top:
@@ -2102,7 +2102,7 @@ def half_inning_with_fixed_base_running(
 
     summary_lines = []
     summary_lines.append("")
-    summary_lines.append(f"END OF THE {'TOP' if is_top else 'BOTTOM'} OF INNING {inning}. "
+    summary_lines.append(f"END OF THE {'TOP' if is_top else 'BOTTOM'} OF INNING {inning}.\n"
                          f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}")
     summary_lines.append("")
     play_by_play_log.extend(summary_lines)
@@ -2169,7 +2169,7 @@ def play_full_game(team_a_master, team_b_master, pitchers_a, pitchers_b, team_a_
 
         # --- Top of the Inning ---
         full_play_by_play.append(f"=== Inning {inning}, Top: {team_a_name} Batting ===")
-        full_play_by_play.append(f"⚾ Pitching for {team_b_name}: {pitcher_b.name} ⚾")
+        full_play_by_play.append(f"⚾ Pitching for {team_b_name}: {pitcher_b.name}")
         inning_score_a, current_batter_a, play_by_play_a, forfeit_a = \
             half_inning_with_fixed_base_running(
                 team_a_name, team_a, pitcher_b, [], current_batter_a, inning, True,
@@ -2183,7 +2183,7 @@ def play_full_game(team_a_master, team_b_master, pitchers_a, pitchers_b, team_a_
 
         # --- Bottom of the Inning ---
         full_play_by_play.append(f"=== Inning {inning}, Bottom: {team_b_name} Batting ===")
-        full_play_by_play.append(f"⚾ Pitching for {team_a_name}: {pitcher_a.name} ⚾")
+        full_play_by_play.append(f"⚾ Pitching for {team_a_name}: {pitcher_a.name}")
         bottom_suppress = True if inning == 9 else False
         inning_score_b, current_batter_b, play_by_play_b, forfeit_b = \
             half_inning_with_fixed_base_running(
@@ -2219,7 +2219,7 @@ def play_full_game(team_a_master, team_b_master, pitchers_a, pitchers_b, team_a_
             defensive_positions_top = assign_defensive_positions([p for p in team_b if p != pitcher_top])
             defensive_positions_top["pitcher"] = pitcher_top
             full_play_by_play.append(f"=== Inning {inning}, Top: {team_a_name} Batting ===")
-            full_play_by_play.append(f"⚾ Pitching for {team_b_name}: {pitcher_top.name} ⚾")
+            full_play_by_play.append(f"⚾ Pitching for {team_b_name}: {pitcher_top.name}")
             inning_score_a, current_batter_a, play_by_play_a, forfeit_a = \
                 half_inning_with_fixed_base_running(
                     team_a_name, team_a, pitcher_top, [], current_batter_a, inning, True,
@@ -2245,7 +2245,7 @@ def play_full_game(team_a_master, team_b_master, pitchers_a, pitchers_b, team_a_
             defensive_positions_bottom = assign_defensive_positions([p for p in team_a if p != pitcher_bottom])
             defensive_positions_bottom["pitcher"] = pitcher_bottom
             full_play_by_play.append(f"=== Inning {inning}, Bottom: {team_b_name} Batting ===")
-            full_play_by_play.append(f"⚾ Pitching for {team_a_name}: {pitcher_bottom.name} ⚾")
+            full_play_by_play.append(f"⚾ Pitching for {team_a_name}: {pitcher_bottom.name}")
             inning_score_b, current_batter_b, play_by_play_b, forfeit_b = \
                 half_inning_with_fixed_base_running(
                     team_b_name, team_b, pitcher_bottom, [], current_batter_b, inning, False,
