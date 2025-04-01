@@ -1276,58 +1276,50 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
             else:
                 return "potential_single", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
 
-        elif 55 <= roll < effective_threshold:
-            foul_mood.update(False)
-            balls += 1
-            bso_display = format_bso(balls, strikes, current_outs)
-            pitches.append(f"{format_player_status(batter)} - Ball {balls}! {bso_display}")
-            if balls == 4:
-                return ("walk", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
 
-        elif roll >= 45:
-            foul_count += 1
-            if foul_count >= 6:
-                # First, log the usual foul ball message.
-                bso_display = format_bso(balls, strikes, current_outs)
-                pitches.append(f"{format_player_status(batter)} - Foul Ball! {bso_display}")
-                # Now, log the "gods" message and increment the out.
-                current_outs += 1
-                bso_display = format_bso(balls, strikes, current_outs)
-                pitches.append(f"⚡ THE GODS ARE FED UP WITH {format_player_status(batter)}'s FOULS! SMITED! ⚡ {bso_display}")
-                # Mark the batter for pending death so that they are removed from play.
-                batter.is_dead = True
-                # End this at-bat immediately.
-                return "foul_limit_out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
+        elif 45 <= roll < effective_threshold:
+            foul_ball_threshold = 56  # Adjust this value to change foul ball frequency.
+            if roll < foul_ball_threshold:
+                foul_count += 1
+                if foul_count >= 6:
+                    bso_display = format_bso(balls, strikes, current_outs)
+                    pitches.append(f"{format_player_status(batter)} - Foul Ball! {bso_display}")
+                    bso_display = format_bso(balls, strikes, current_outs)
+                    pitches.append(
+                        f"⚡ THE GODS ARE FED UP WITH {format_player_status(batter)}'s FOULS! {format_player_status(batter)} is SMITED! ⚡")
+                    batter.pending_death = True
+                    return "foul_limit_out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
+                else:
+                    if strikes < 2:
+                        strikes += 1
+                    bso_display = format_bso(balls, strikes, current_outs)
+                    pitches.append(f"{format_player_status(batter)} - Foul Ball! {bso_display}")
+                    bonus_increased = foul_mood.update(True)
+                    if bonus_increased:
+                        bonus_message = foul_mood.get_bonus_message()
+                        pitches.append(f"The players are getting tired of this... {bonus_message}")
             else:
-                if strikes < 2:
-                    strikes += 1
+                balls += 1
                 bso_display = format_bso(balls, strikes, current_outs)
-                pitches.append(f"{format_player_status(batter)} - Foul Ball! {bso_display}")
-                bonus_increased = foul_mood.update(True)
-                if bonus_increased:
-                    bonus_message = foul_mood.get_bonus_message()
-                    pitches.append(f"The players are getting tired of this... {bonus_message}")
+                pitches.append(f"{format_player_status(batter)} - Ball {balls}! {bso_display}")
+                if balls == 4:
+                    return ("walk", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
+            continue
 
-        # Result: Strikes, Outs
-        # Both adjusted based on batter.chutzpah
         if batter.chutzpah == 0:
             strike_threshold = 20
             flyout_threshold = 10
         else:
             strike_threshold = 20 - ((batter.chutzpah + 1) // 2)
             flyout_threshold = 10 - ((batter.chutzpah + 1) // 2)
-
-        # Strike outcome check.
         strike_attempt = False
         if roll >= strike_threshold:
-            # If the roll exactly equals the threshold and batter.chutzpah is odd, apply a 50/50 chance.
             if roll == strike_threshold and batter.chutzpah > 0 and (batter.chutzpah % 2 == 1):
                 chance = random.random()
                 if chance >= 0.5:
                     strike_attempt = True
             else:
                 strike_attempt = True
-
         if strike_attempt:
             foul_mood.update(False)
             if strikes == 2:
@@ -1350,7 +1342,6 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 bso_display = format_bso(balls, strikes, current_outs)
                 pitches.append(f"{format_player_status(batter)} - Strike {strikes}! {bso_display}")
         else:
-            # Fly out outcome check.
             flyout_attempt = False
             if roll >= flyout_threshold:
                 if roll == flyout_threshold and batter.chutzpah > 0 and (batter.chutzpah % 2 == 1):
@@ -1359,7 +1350,6 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                         flyout_attempt = True
                 else:
                     flyout_attempt = True
-
             if flyout_attempt:
                 foul_mood.update(False)
                 current_outs += 1
@@ -1371,8 +1361,6 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 ])
                 pitches.append(f"{format_player_status(batter)} {out_description} {bso_display}")
                 return "fly out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
-
-            # Ground out outcome.
             foul_mood.update(False)
             current_outs += 1
             bso_display = format_bso(balls, strikes, current_outs)
@@ -1405,10 +1393,9 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
             pitches.append(combined_msg)
             return "ground out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
 
-    # Fallback branch:
     print("Warning: at_bat_with_pitch_sequence reached the end without returning a result!")
     print(f"batter: {batter.name}, balls: {balls}, strikes: {strikes}, outs: {current_outs}")
-    return ("error", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names)
+    return "error", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
 
 # === Brawl System === #
 # Base chances (in percentages) for various brawl-triggering events.
@@ -1976,16 +1963,10 @@ def half_inning_with_fixed_base_running(
             base_runners = updated_base_runners
             base_runners = remove_dead_from_bases(base_runners)
 
-            if at_bat_result == "foul_limit_out":
-                # Optionally log or do any additional processing here.
-                # Remove the batter from the batting order.
-                batting_order.remove(batter)  # or mark them as dead so is_active(batter) returns False
-                break  # Ends the current at-bat immediately.
-
             # Only break if a decisive outcome is reached.
             if at_bat_result in ["potential_single", "potential_double", "potential_triple", "walk",
                                  "beaned_walk", "potential_bunt_hit", "bunt_out", "bunt_dp", "strike_out",
-                                 "fly out", "ground out", "home run", "grand_slam", "near_miss_hr"]:
+                                 "fly out", "ground out", "home run", "grand_slam", "near_miss_hr", "close_call_out", "foul_limit_out"]:
                 break
             # Otherwise, the at–bat continues (i.e. more pitches for the same batter).
 
