@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import copy
+import re
 
 # Instead of importing original_scorpions_players, original_aether_players, and get_new_roster,
 # we import get_teams (which already returns a fresh deep copy of the master teams)
@@ -72,8 +73,41 @@ button_label = "RE-PLAY BALL!" if st.session_state.game_run else "PLAY BALL!"
 # Use the on_click parameter to update state immediately on first click.
 st.button(button_label, on_click=run_game)
 
+
+def reformat_log_line(line: str) -> str:
+    """
+    Move the BSO (like (B-/S-/O-)) and any following squares (🟩⬜) to a new line,
+    keeping them on one single line together if squares follow the BSO.
+    Also, if squares appear alone, move them to their own line.
+    """
+
+    # This pattern matches:
+    #   1) A BSO group: \(B ... \)
+    #      optionally followed by some whitespace and one or more squares (🟩⬜),
+    #      OR
+    #   2) Just a run of squares (🟩⬜) with no preceding BSO.
+    #
+    # By capturing them as a group, we can insert exactly one "\n" in front.
+    pattern = r'(\(B[^)]*\)\s*[🟩⬜]+|\(B[^)]*\)|[🟩⬜]+)'
+
+    # Insert exactly one newline in front of that entire block,
+    # collapsing any prior spaces.
+    line = re.sub(pattern, r'\n\1', line)
+
+    # If the original line already had a newline, or we created multiple
+    # consecutive newlines, let's collapse them into a single newline:
+    line = re.sub(r'\n+', '\n', line)
+
+    # Finally, strip leading/trailing whitespace or newlines
+    line = line.strip()
+
+    return line
+
 # Display the game log if it exists.
 if st.session_state.game_log:
     st.write("### Game Log")
     for line in st.session_state.game_log:
-        st.write(line)
+        formatted_line = reformat_log_line(line)
+        st.text(formatted_line)
+
+# streamlit run App.py
