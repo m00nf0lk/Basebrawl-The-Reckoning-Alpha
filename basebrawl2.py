@@ -935,15 +935,15 @@ def attempt_pickoff(runner, pitcher):
 
 def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_top, team_a_name,
                              team_b_name, defensive_positions, balls, strikes, outs, riled_up, team_a, team_b):
-    """
-    Iterates over base runners and attempts a pickoff.
-    Adjusts base_runners and outs or score depending on the outcome.
-    """
     end_at_bat = False
+    attempted_pickoff = False  # >>> ADD CODE HERE: flag to allow only one attempt per at-bat
     for base_index in [0, 1, 2]:
+        if attempted_pickoff:
+            break  # >>> ADD CODE HERE: exit loop if an attempt has been made
         runner = base_runners[base_index]
         if runner is not None and is_active(runner):
             result, roll = attempt_pickoff(runner, defensive_positions.get("pitcher"))
+            attempted_pickoff = True  # >>> ADD CODE HERE: mark that we've attempted a pickoff
             base_text = base_number_to_text(base_index)
             if result == "picked_off":
                 base_runners[base_index] = None
@@ -957,8 +957,10 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
 
             elif result == "checked":
                 updated_bso = format_bso(balls, strikes, outs)
-                play_by_play_log.append(f"⚾ Pitcher {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} "
-                                        f"runs back just in time. Safe!")
+                play_by_play_log.append(
+                    f"⚾ Pitcher {pitcher.name} throws to {base_text} for a pickoff! {format_player_status(runner)} "
+                    f"runs back just in time. Safe!")
+
             elif result == "balk":
                 new_bases = [None, None, None]
                 scored = False
@@ -976,11 +978,9 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                 new_bases[1] = base_runners[0]
                 base_runners = new_bases
                 if scored:
-                    # (1) Action message:
                     play_by_play_log.append(
                         f"Pitcher {pitcher.name} slips up on the mound... and it's a balk! All baserunners advance. {scoring_runner_name} scores! {display_bases_as_squares(base_runners)}"
                     )
-                    # (2) Riled-down message:
                     if is_top:
                         reduce_msg = riled_up.reduce_on_score(team_a_name)
                     else:
@@ -992,7 +992,6 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
                             apply_riled_buff(team_a, bonus)
                         else:
                             apply_riled_buff(team_b, bonus)
-                    # (3) Current score update:
                     score_line = f"📊 Current Score: {team_a_name}: {score[team_a_name]}, {team_b_name}: {score[team_b_name]}"
                     play_by_play_log.append(score_line)
                 else:
@@ -1431,12 +1430,14 @@ def simulate_brawl(team_a, team_b, team_a_name, team_b_name):
     log.append(f"{team_a_name} ({team_a_total}) vs {team_b_name} ({team_b_total})")
     if team_a_total > team_b_total:
         margin = team_a_total - team_b_total
-        casualties_team_b = max(1, int(calculate_num_injuries(margin) * (team_a_total / team_b_total) * 0.5))
-        casualties_team_a = max(1, int(calculate_num_injuries(margin) * (team_b_total / team_a_total) * 0.5))
+        total_injuries = max(1, int(margin / 10))
+        casualties_team_b = total_injuries  # losing team gets injuries equal to margin/10
+        casualties_team_a = 1 if total_injuries > 1 else 0  # winning team gets a minimal injury
     elif team_b_total > team_a_total:
         margin = team_b_total - team_a_total
-        casualties_team_a = max(1, int(calculate_num_injuries(margin) * (team_b_total / team_a_total) * 0.5))
-        casualties_team_b = max(1, int(calculate_num_injuries(margin) * (team_a_total / team_b_total) * 0.5))
+        total_injuries = max(1, int(margin / 10))
+        casualties_team_a = total_injuries  # losing team gets injuries equal to margin/10
+        casualties_team_b = 1 if total_injuries > 1 else 0  # winning team gets a minimal injury
     else:
         casualties_team_a = casualties_team_b = 1
 
