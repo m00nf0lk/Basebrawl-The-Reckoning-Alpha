@@ -1363,7 +1363,18 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
             foul_mood.update(False)
             current_outs += 1
             bso_display = format_bso(balls, strikes, current_outs)
-            combined_msg = f"{format_player_status(batter)} - Ground Out! {bso_display}"
+            # Set up our default and flavorful messages.
+            default_ground_message = "Ground Out!"
+            flavor_ground_messages = [
+                "chops it to the infield. Ground Out!",
+                "bounces it straight to the shortstop. Ground Out!",
+                "grounds one weakly. An easy out for the defense!"
+            ]
+
+            # Start by adding a basic ground-out message.
+            combined_msg = f"{format_player_status(batter)} - {default_ground_message} {bso_display}"
+
+            # Set up tag chance logic.
             base_tag_chance = 0.20
             extra_bonus = 0
             shortstop = defensive_positions.get("shortstop")
@@ -1373,22 +1384,33 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
             else:
                 shortstop_name = "the shortstop"
             extra_tag_chance = base_tag_chance + extra_bonus
+
+            # Flag to know if any tag occurred.
+            tag_occurred = False
             shortstop_called = False
+
+            # Process tag opportunities for base runners.
             for base_idx, runner in enumerate(base_runners):
                 if runner is not None:
                     if random.random() < extra_tag_chance:
+                        tag_occurred = True
                         base_text = base_number_to_text(base_idx)
+                        # Update outs and bso_display for each tag.
+                        current_outs += 1
+                        bso_display = format_bso(balls, strikes, current_outs)
                         if not shortstop_called:
-                            current_outs += 1
-                            bso_display = format_bso(balls, strikes, current_outs)
                             tag_msg = f" {format_player_status(runner)} is caught in a rundown and tagged out by {shortstop_name} at {base_text}! {bso_display}"
                             shortstop_called = True
                         else:
-                            current_outs += 1
-                            bso_display = format_bso(balls, strikes, current_outs)
                             tag_msg = f" {format_player_status(runner)} is tagged out at {base_text}! {bso_display}"
                         combined_msg += tag_msg
                         base_runners[base_idx] = None
+
+            # If no tag occurred, replace the default ground message with a flavorful one.
+            if not tag_occurred:
+                ground_text = random.choice(flavor_ground_messages)
+                combined_msg = f"{format_player_status(batter)} {ground_text} {bso_display}"
+
             pitches.append(combined_msg)
             return "ground out", base_runners, pitches, current_outs, beaned, balls, strikes, scoring_names
 
