@@ -12,8 +12,9 @@ if "game_log" not in st.session_state:
     st.session_state.game_log = []
 
 # --- Title & Intro ---
-st.title("Basebrawl: The Reckoning 2")
-st.markdown("*welcome, mortal...*")
+st.title("Basebrawl: The Reckoning")
+st.markdown("*welcome back, mortal...*\
+the ball knows pain now.")
 
 def run_game():
     teams = get_teams()
