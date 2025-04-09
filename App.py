@@ -3,33 +3,13 @@ import random
 import re
 
 from Players import get_teams
-from basebrawl2 import play_full_game
+from basebrawl4 import play_full_game
 
 # --- Session State ---
 if "game_run" not in st.session_state:
     st.session_state.game_run = False
 if "game_log" not in st.session_state:
     st.session_state.game_log = []
-
-# --- Fix anchor overlap ---
-st.markdown(
-    """
-    <style>
-    /* This targets the element that becomes :target (i.e. #top)
-       and adds some spacing so it's not hidden by the header. */
-    :target::before {
-      content: "";
-      display: block;
-      height: 70px; /* Adjust to your header's height */
-      margin: -70px 0 0;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Anchor for "Back to Top"
-st.markdown("<a id='top'></a>", unsafe_allow_html=True)
 
 # --- Title & Intro ---
 st.title("Basebrawl: The Reckoning")
@@ -75,7 +55,6 @@ def reformat_log_line(line: str) -> str:
     return line.strip()
 
 if st.session_state.game_log:
-    st.write("### Game Log")
     for line in st.session_state.game_log:
         formatted_line = reformat_log_line(line)
         st.text(formatted_line)
@@ -100,9 +79,12 @@ back_to_top_html = """
 }
 </style>
 <div class="back-to-top">
-    <a href="#top">BACK TO TOP</a>
+    <a href="#basebrawl-the-reckoning">BACK TO TOP</a>
 </div>
 """
 
 if st.session_state.game_run:
     st.markdown(back_to_top_html, unsafe_allow_html=True)
+
+
+# streamlit run App.py
