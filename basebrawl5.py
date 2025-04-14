@@ -299,7 +299,8 @@ def remove_dead_from_bases(base_runners):
     Iterates over the list of base runners (positions for first, second, and third)
     and sets any runner who is not active (i.e. dead or knocked out) to None.
     """
-    return [runner if (runner is not None and is_active(runner)) else None for runner in base_runners]
+    return [runner if (runner is not None and is_active(runner, ignore_exhausted_for_batting=True))
+            else None for runner in base_runners]
 
 def finalize_pending_deaths(team):
     """
@@ -312,25 +313,38 @@ def finalize_pending_deaths(team):
             player.final_bat_allowed = True
             del player.pending_death
 
+
 def get_next_batter(batting_order, last_batter, batters_remaining, current_baserunners):
-    """
-    Randomly selects a batter from batters_remaining.
-    When batters_remaining is empty, resets it to a list of batters from batting_order,
-    excluding the last batter and those currently on base (as indicated by current_baserunners).
-    A debug message is printed if players on base are skipped.
-    """
+    # Rebuild batters_remaining if needed.
     if not batters_remaining:
-        # Filter out last_batter and current_baserunners
-        filtered_list = [b for b in batting_order if b not in current_baserunners]
-        # If filtering left nothing, fall back to excluding only last_batter.
-        if not filtered_list:
-            if len(batting_order) > 1:
-                batters_remaining = [b for b in batting_order if b != last_batter]
-        else:
-            batters_remaining = filtered_list
+        # Start with batters not on base.
+        eligible = [b for b in batting_order if b not in current_baserunners]
+
+        # Try to remove last_batter if we have more than one eligible batter.
+        if last_batter is not None and len(eligible) > 1:
+            eligible = [b for b in eligible if b != last_batter] or eligible
+
+        # Shuffle randomly.
+        batters_remaining = eligible[:]
+        random.shuffle(batters_remaining)
+
+        # Ensure that the first batter is not the last batter if possible.
+        if last_batter is not None and len(batters_remaining) > 1 and batters_remaining[0] == last_batter:
+            batters_remaining[0], batters_remaining[1] = batters_remaining[1], batters_remaining[0]
+
+    # Additional check: If batters_remaining still contains last_batter and there are alternative choices, try to avoid it.
+    if last_batter is not None and len(batters_remaining) > 1:
+        alternatives = [b for b in batters_remaining if b != last_batter]
+        if alternatives:
+            next_batter = random.choice(alternatives)
+            batters_remaining.remove(next_batter)
+            return next_batter, batters_remaining
+
+    # Otherwise, simply pick and remove one at random.
     next_batter = random.choice(batters_remaining)
     batters_remaining.remove(next_batter)
     return next_batter, batters_remaining
+
 
 def pitcher_priority(p):
     return p.pitching
@@ -1005,7 +1019,7 @@ def process_pickoff_attempts(base_runners, pitcher, play_by_play_log, score, is_
         if attempted_pickoff:
             break  # >>> ADD CODE HERE: exit loop if an attempt has been made
         runner = base_runners[base_index]
-        if runner is not None and is_active(runner):
+        if runner is not None and is_active(runner, ignore_exhausted_for_batting=True):
             result, roll = attempt_pickoff(runner, defensive_positions.get("pitcher"))
             attempted_pickoff = True  # >>> ADD CODE HERE: mark that we've attempted a pickoff
             base_text = base_number_to_text(base_index)
@@ -1390,7 +1404,7 @@ def at_bat_with_pitch_sequence(batter, pitcher, base_runners, current_outs, defe
                 base_tag_chance = 0.20
                 extra_bonus = 0
                 shortstop = defensive_positions.get("shortstop")
-                if shortstop is not None and is_active(shortstop):
+                if shortstop is not None and is_active(shortstop, ignore_exhausted_for_batting=True):
                     extra_bonus = shortstop.fielding * 0.02
                     shortstop_name = shortstop.name
                 else:
@@ -1464,13 +1478,14 @@ BRAWL_BASE_CHANCES = {
     **dict.fromkeys(["beaned", "collision"], 50),
     **dict.fromkeys(["near_miss_hr", "grand_slam"], 25),
     **dict.fromkeys(["close_tag_out", "close_call_out"], 25),
-    **dict.fromkeys(["single", "double", "triple", "strike_out", "fly out", "ground out"], -50)
+    **dict.fromkeys(["potential_single", "potential_double", "potential_triple",
+                     "strike_out", "fly out", "ground out", "home run"], -50)
 }
 
 def maybe_trigger_brawl(event_type, team_a, team_b, team_a_name, team_b_name, log, foul_mood):
     if event_type in BRAWL_BASE_CHANCES:
         base_chance = BRAWL_BASE_CHANCES[event_type]
-        bonus = foul_mood.bonus if hasattr(foul_mood, "bonus") else 0
+        bonus = foul_mood.get_bonus()
         chance = max(0, min(100, base_chance + bonus))
         roll = random.randint(1, 100)
         if roll <= chance:
@@ -1879,22 +1894,22 @@ def half_inning_with_fixed_base_running(
     if len(batting_order) == 0:
         play_by_play_log = [f"{team_name} has no players left and must forfeit immediately!"]
         return 0, current_batter_index, play_by_play_log, True
-    # Define half_team for logging.
-    half_team = team_a_name if is_top else team_b_name
+
+    # Initialize state variables for batter selection once per half–inning:
+    batters_remaining = batting_order.copy()
+    last_batter = None
 
     while True:
         # Forfeit if no active batters remain.
-        if not any(is_active(b) for b in batting_order):
+        if not any(is_active(b, ignore_exhausted_for_batting=True) for b in batting_order):
             play_by_play_log.append(f"{team_name} has no active players left and must forfeit immediately!")
             return inning_score, current_batter_index, play_by_play_log, True
 
-        #choose batters randomly
+        # --- BATTER SELECTION (State Management) ---
+        eligible_batters = [b for b in batting_order if is_active(b, ignore_exhausted_for_batting=True)]
         current_baserunners = [runner for runner in base_runners if runner is not None]
-        if 'batters_remaining' not in locals():
-            batters_remaining = batting_order.copy()
-        if 'last_batter' not in locals():
-            last_batter = None
-        batter, batters_remaining = get_next_batter(batting_order, last_batter, batters_remaining, current_baserunners)
+        batter, batters_remaining = get_next_batter(eligible_batters, last_batter, batters_remaining,
+                                                    current_baserunners)
         last_batter = batter
 
         status_msg = batter_status_message(batter, team_name)
@@ -1905,8 +1920,8 @@ def half_inning_with_fixed_base_running(
             batter.is_dead = True
             batter.pending_death = False
 
-        # Skip the at–bat if the batter is inactive.
-        if not is_active(batter):
+        # If the batter is inactive, move on to the next at-bat.
+        if not is_active(batter, ignore_exhausted_for_batting=True):
             current_batter_index += 1
             continue
 
@@ -1952,7 +1967,7 @@ def half_inning_with_fixed_base_running(
 
         # --- At-Bat Delay Steal Attempt ---
         for base_index in [2, 1, 0]:
-            if base_runners[base_index] is not None and is_active(base_runners[base_index]):
+            if base_runners[base_index] is not None and is_active(base_runners[base_index], ignore_exhausted_for_batting=True):
                 if base_index < 2 and base_runners[base_index + 1] is not None:
                     continue
                 runner = base_runners[base_index]
@@ -2139,7 +2154,8 @@ def half_inning_with_fixed_base_running(
 
         # Check if a brawl needs to be triggered.
         if at_bat_result in ["beaned_walk", "near_miss_hr", "grand_slam", "close_call_out",
-                             "single", "double", "triple", "strike_out", "fly out", "ground out"]:
+                             "potential_single", "potential_double", "potential_triple", "strike_out",
+                             "fly out", "ground out", "home run"]:
             maybe_trigger_brawl(at_bat_result, team_a, team_b, team_a_name, team_b_name, play_by_play_log, foul_mood)
 
         #next batter
