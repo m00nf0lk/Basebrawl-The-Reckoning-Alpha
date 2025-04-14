@@ -2,8 +2,8 @@ import streamlit as st
 import random
 import re
 
-from Players import get_teams
-from basebrawl4 import play_full_game
+from Players import get_teams  # This returns a fresh deep copy of the master teams.
+from basebrawl5 import play_full_game
 
 # --- Session State ---
 if "game_run" not in st.session_state:
@@ -13,7 +13,7 @@ if "game_log" not in st.session_state:
 
 # --- Title & Intro ---
 st.title("Basebrawl: The Reckoning")
-st.markdown("*welcome back, mortal... the ball knows pain now.*")
+st.markdown("*welcome back, mortal. time to flame and shame...*")
 
 def run_game():
     teams = get_teams()
@@ -85,6 +85,3 @@ back_to_top_html = """
 
 if st.session_state.game_run:
     st.markdown(back_to_top_html, unsafe_allow_html=True)
-
-
-# streamlit run App.py
