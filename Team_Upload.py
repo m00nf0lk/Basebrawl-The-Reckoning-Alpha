@@ -41,6 +41,17 @@ class Player:
         self.remaining_innings = calculate_pitching_stint(self)
         self.exhausted = False
 
+    def __eq__(self, other):
+        if isinstance(other, Player):
+            # Compare using a unique field. Here we use name.
+            # (Better: add a unique player ID if possible.)
+            return self.name == other.name
+        return False
+
+    def __hash__(self):
+        # Hash based on unique name.
+        return hash(self.name)
+
 def load_master_teams(csv_file_path):
     teams = {}
     with open(csv_file_path, newline='') as csvfile:
