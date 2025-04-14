@@ -1,5 +1,17 @@
 import csv
-import copy
+import random
+def calculate_pitching_stint(p):
+    """
+    Calculate a pitcher’s stint in half–innings.
+    If you want a maximum of 6 full innings (i.e. 12 half–innings), then use 12 here.
+    Adjust the bonus as needed.
+    """
+    base_stint = 4  # for example, every pitcher gets at least 4 half-innings
+    bonus = p.agility // 2
+    if p.agility % 2 == 1 and random.random() < 0.5:
+        bonus += 1
+    stint = base_stint + bonus
+    return min(stint, 12)  # 12 half–innings = 6 full innings
 
 class Player:
     def __init__(self, name, power, agility, chutzpah, batting, pitching, baserunning, fielding, brawling):
@@ -26,6 +38,8 @@ class Player:
         self.recovery_bonus = 0.0
         self.knockout_halves_remaining = 0
         self.pending_death = False
+        self.remaining_innings = calculate_pitching_stint(self)
+        self.exhausted = False
 
 def load_master_teams(csv_file_path):
     teams = {}
