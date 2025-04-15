@@ -25,7 +25,7 @@ if "show_stats" not in st.session_state:
 
 # --- Title & Intro ---
 st.title("Basebrawl: The Reckoning")
-st.markdown("*welcome back, mortal. time to flame and shame...*")
+st.markdown("*welcome back, mortal... are you horny for the book?*")
 
 
 def run_game():
