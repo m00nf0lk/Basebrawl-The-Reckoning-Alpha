@@ -516,7 +516,7 @@ def get_fielder_for_base(base, defensive_positions):
             elif hasattr(expected_fielder, "knockout_halves_remaining") and expected_fielder.knockout_halves_remaining > 0:
                 primary_status_message = f"{expected_fielder.name} is knocked out"
             else:
-                primary_status_message = f"{format_player_status(expected_fielder)} is on defense"
+                primary_status_message = f"{format_player_status(expected_fielder)} is nowhere to be found"
         primary_status = "inactive"
 
 #==== Assists ====#
