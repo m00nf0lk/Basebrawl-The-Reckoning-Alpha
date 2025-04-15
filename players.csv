@@ -1,5 +1,5 @@
 Team,Name,Power,Agility,Chutzpah,Batting,Pitching,Baserunning,Fielding,Brawling
-Scorpions,Dread Malakar,10,0,0,0,10,4,3,3
+Scorpions,Dread Malakar,10,0,0,10,0,4,3,3
 Scorpions,Thorne Graveborn,3,0,0,5,0,2,2,1
 Scorpions,Skar Deathwhisper,3,0,0,0,7,1,1,1
 Scorpions,Vekros Hollowfang,3,0,0,2,4,2,1,1
@@ -14,7 +14,7 @@ The Aether,Celian Starborn,0,3,0,0,5,3,1,1
 The Aether,Vaelor Lightcrest,0,3,0,3,0,4,2,1
 The Aether,Zephiron Windrider,0,3,0,1,1,7,0,1
 The Aether,Eldrin Dawnseeker,0,3,0,2,2,5,0,1
-The Aether,Solric Moonveil,0,10,0,3,7,4,3,3
+The Aether,Solric Moonveil,0,10,0,3,3,8,3,3
 The Aether,Varian Everwatch,0,3,0,0,8,0,1,1
 The Aether,Kaelis Runeveil,0,3,0,4,3,1,1,1
 Kingpins,Vince Calamari,0,0,3,2,4,0,3,1
