@@ -363,20 +363,11 @@ def calculate_pitching_stint(p):
     return min(stint, 12)  # 12 half–innings = 6 full innings
 
 def select_new_pitcher(team):
-    """
-    Return an eligible pitcher.
-      - First try to select one that is active and NOT exhausted.
-      - If all active pitchers are exhausted, return a random active pitcher.
-      - If no active pitchers remain, return None.
-    """
-    # Filter for active pitchers that are not exhausted.
     non_exhausted = [p for p in team if is_active(p) and not getattr(p, 'exhausted', False)]
     if non_exhausted:
-        # Pick best available (using your existing pitcher_priority).
         best_pitchers = sorted(non_exhausted, key=pitcher_priority, reverse=True)
         return best_pitchers[0]
     else:
-        # If every eligible pitcher is exhausted, then choose a random active pitcher.
         active_pitchers = [p for p in team if is_active(p)]
         if active_pitchers:
             return random.choice(active_pitchers)
@@ -391,6 +382,7 @@ def reset_pitchers_if_exhausted(team):
     if all(getattr(p, 'remaining_innings', 0) <= 0 for p in team):
         for p in team:
             p.remaining_innings = calculate_pitching_stint(p)
+            p.exhausted = False
 
 #=== Position Assignments ===#
 
@@ -398,8 +390,6 @@ def is_active(player, ignore_exhausted_for_batting=False):
     if getattr(player, "is_dead", False) and not getattr(player, "final_bat_allowed", False):
         return False
     if hasattr(player, "knockout_halves_remaining") and player.knockout_halves_remaining > 0:
-        return False
-    if not ignore_exhausted_for_batting and getattr(player, 'exhausted', False):
         return False
     return True
 
