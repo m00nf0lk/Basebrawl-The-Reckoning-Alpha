@@ -643,7 +643,7 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
             new_target = extra_target
             if new_target != 3:
                 runner_movements.append(
-                    f"{format_player_status(runner)} takes an extra base from {base_number_to_text(starting_base)} "
+                    f"{format_player_status(runner)} takes an extra base"
                     f"and ends up on {base_number_to_text(new_target)}!"
                 )
 
@@ -651,8 +651,7 @@ def attempt_base_advancement(runner, current_base, target_base, defensive_positi
         if new_target == 3:
             if outs < 3:
                 runs_scored += 1
-                runner_movements.append(f"{format_player_status(runner)} takes an extra base from "
-                                        f"{base_number_to_text(starting_base)} and scores!")
+                runner_movements.append(f"{format_player_status(runner)} takes an extra base and scores!")
                 if is_top:
                     score[team_a_name] += 1
                     reduce_msg = riled_up.reduce_on_score(team_a_name)
